@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { Button } from "@/components/Button";
 
 export default function NotFound() {
   return (
@@ -16,9 +15,12 @@ export default function NotFound() {
           moved. Explore our range of Sri Lankan spices instead.
         </p>
         <div className="pt-2">
-          <Button type="button">
-            <Link href="/shop">Browse Spices</Link>
-          </Button>
+          <Link
+            href="/shop"
+            className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-emerald-600 via-emerald-500 to-emerald-400 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-emerald-500/30 transition hover:from-emerald-500 hover:to-emerald-300"
+          >
+            Browse Spices
+          </Link>
         </div>
       </div>
     </div>
