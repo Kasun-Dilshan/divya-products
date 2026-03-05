@@ -1,0 +1,22 @@
+<svg width="600" height="450" viewBox="0 0 600 450" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bgTurmeric" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FEF9C3"/>
+      <stop offset="1" stop-color="#FFFBEB"/>
+    </linearGradient>
+  </defs>
+  <rect width="600" height="450" rx="40" fill="url(#bgTurmeric)"/>
+  <circle cx="130" cy="110" r="80" fill="#FACC15" fill-opacity="0.18"/>
+  <circle cx="480" cy="180" r="90" fill="#F97316" fill-opacity="0.12"/>
+  <ellipse cx="300" cy="250" rx="150" ry="60" fill="#F59E0B"/>
+  <ellipse cx="300" cy="244" rx="136" ry="52" fill="#FBBF24"/>
+  <ellipse cx="300" cy="240" rx="110" ry="40" fill="#FACC15"/>
+  <ellipse cx="300" cy="236" rx="80" ry="28" fill="#F97316" fill-opacity="0.9"/>
+  <path d="M210 210C230 188 260 176 294 176C328 176 359 188 380 210" stroke="#92400E" stroke-width="5" stroke-linecap="round" stroke-opacity="0.5"/>
+  <path d="M210 290C236 302 264 308 294 308C324 308 352 302 378 290" stroke="#D97706" stroke-width="4" stroke-linecap="round" stroke-opacity="0.7"/>
+  <rect x="152" y="320" width="296" height="36" rx="18" fill="#ECFDF5"/>
+  <text x="300" y="343" text-anchor="middle" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="13" font-weight="600" fill="#92400E">
+    Turmeric Powder � Rich golden color and earthy aroma
+  </text>
+</svg>
+
