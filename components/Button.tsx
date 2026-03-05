@@ -1,8 +1,10 @@
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
-import type { ButtonHTMLAttributes, ReactNode } from "react";
+import type { ComponentProps, ReactNode } from "react";
 
-type ButtonProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, "onDrag"> & {
+type MotionButtonProps = ComponentProps<typeof motion.button>;
+
+type ButtonProps = MotionButtonProps & {
   children: ReactNode;
   variant?: "primary" | "outline" | "ghost";
   fullWidth?: boolean;
