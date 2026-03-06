@@ -1,13 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiShoppingCart, FiMoon, FiSun, FiMenu, FiX } from "react-icons/fi";
 import { useCart } from "@/context/CartContext";
 import { useTheme } from "@/context/ThemeContext";
+import { useAuth } from "@/context/AuthContext";
 import { cn } from "@/lib/utils";
+import toast from "react-hot-toast";
 
 const navLinks = [
   { href: "/", label: "Home" },
@@ -17,9 +19,25 @@ const navLinks = [
 
 export function Navbar() {
   const pathname = usePathname();
+  const router = useRouter();
   const { totalQuantity } = useCart();
   const { theme, toggleTheme } = useTheme();
+  const { user, isLoading, logout } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      toast.success("Logged out");
+      router.push("/");
+    } catch {
+      toast.error("Logout failed");
+    } finally {
+      setMobileOpen(false);
+    }
+  };
+
+  const isAdmin = user?.role === "admin";
 
   return (
     <header className="fixed inset-x-0 top-0 z-40 border-b border-emerald-100/60 bg-white/80 backdrop-blur-xl dark:border-emerald-800/60 dark:bg-slate-950/80">
@@ -57,9 +75,70 @@ export function Navbar() {
                 </Link>
               );
             })}
+            {!isLoading && user?.role === "customer" && (
+              <Link
+                href="/account"
+                className={cn(
+                  "relative transition-colors",
+                  pathname === "/account"
+                    ? "text-emerald-700 dark:text-emerald-300"
+                    : "text-slate-700 hover:text-emerald-700 dark:text-slate-200 dark:hover:text-emerald-300",
+                )}
+              >
+                Account
+              </Link>
+            )}
+            {!isLoading && isAdmin && (
+              <Link
+                href="/admin/dashboard"
+                className={cn(
+                  "relative transition-colors",
+                  pathname.startsWith("/admin")
+                    ? "text-emerald-700 dark:text-emerald-300"
+                    : "text-slate-700 hover:text-emerald-700 dark:text-slate-200 dark:hover:text-emerald-300",
+                )}
+              >
+                Admin Dashboard
+              </Link>
+            )}
+            {!isLoading && !user && (
+              <>
+                <Link
+                  href="/login"
+                  className={cn(
+                    "relative transition-colors",
+                    pathname === "/login"
+                      ? "text-emerald-700 dark:text-emerald-300"
+                      : "text-slate-700 hover:text-emerald-700 dark:text-slate-200 dark:hover:text-emerald-300",
+                  )}
+                >
+                  Login
+                </Link>
+                <Link
+                  href="/register"
+                  className={cn(
+                    "relative transition-colors",
+                    pathname === "/register"
+                      ? "text-emerald-700 dark:text-emerald-300"
+                      : "text-slate-700 hover:text-emerald-700 dark:text-slate-200 dark:hover:text-emerald-300",
+                  )}
+                >
+                  Register
+                </Link>
+              </>
+            )}
           </div>
 
           <div className="flex items-center gap-3">
+            {!isLoading && user && (
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="hidden rounded-full border border-emerald-100 bg-white px-3 py-2 text-xs font-semibold text-emerald-700 shadow-sm transition hover:border-emerald-300 hover:bg-emerald-50 dark:border-emerald-800 dark:bg-slate-900 dark:text-emerald-200 dark:hover:border-emerald-500 dark:hover:bg-emerald-950 lg:inline-flex"
+              >
+                Logout
+              </button>
+            )}
             <button
               type="button"
               onClick={toggleTheme}
@@ -122,6 +201,62 @@ export function Navbar() {
                     </Link>
                   );
                 })}
+                {!isLoading && user?.role === "customer" && (
+                  <Link
+                    href="/account"
+                    onClick={() => setMobileOpen(false)}
+                    className={cn(
+                      "rounded-full px-3 py-2 transition-colors",
+                      pathname === "/account"
+                        ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-100"
+                        : "text-slate-700 hover:bg-emerald-50 dark:text-slate-100 dark:hover:bg-emerald-900/40",
+                    )}
+                  >
+                    Account
+                  </Link>
+                )}
+                {!isLoading && isAdmin && (
+                  <Link
+                    href="/admin/dashboard"
+                    onClick={() => setMobileOpen(false)}
+                    className={cn(
+                      "rounded-full px-3 py-2 transition-colors",
+                      pathname.startsWith("/admin")
+                        ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-100"
+                        : "text-slate-700 hover:bg-emerald-50 dark:text-slate-100 dark:hover:bg-emerald-900/40",
+                    )}
+                  >
+                    Admin Dashboard
+                  </Link>
+                )}
+                {!isLoading && !user && (
+                  <>
+                    <Link
+                      href="/login"
+                      onClick={() => setMobileOpen(false)}
+                      className={cn(
+                        "rounded-full px-3 py-2 transition-colors",
+                        pathname === "/login"
+                          ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-100"
+                          : "text-slate-700 hover:bg-emerald-50 dark:text-slate-100 dark:hover:bg-emerald-900/40",
+                      )}
+                    >
+                      Login
+                    </Link>
+                    <Link
+                      href="/register"
+                      onClick={() => setMobileOpen(false)}
+                      className={cn(
+                        "rounded-full px-3 py-2 transition-colors",
+                        pathname === "/register"
+                          ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-100"
+                          : "text-slate-700 hover:bg-emerald-50 dark:text-slate-100 dark:hover:bg-emerald-900/40",
+                      )}
+                    >
+                      Register
+                    </Link>
+                  </>
+                )}
               </div>
 
               <div className="flex items-center justify-between pt-2">
@@ -141,19 +276,30 @@ export function Navbar() {
                   )}
                 </button>
 
-                <Link
-                  href="/cart"
-                  onClick={() => setMobileOpen(false)}
-                  className="relative inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-emerald-600 to-emerald-500 px-3 py-1.5 text-xs font-semibold text-white shadow-md shadow-emerald-500/40"
-                >
-                  <FiShoppingCart size={14} />
-                  <span>Cart</span>
-                  {totalQuantity > 0 && (
-                    <span className="inline-flex h-4 min-w-[1.1rem] items-center justify-center rounded-full bg-white px-1 text-[0.65rem] font-semibold text-emerald-700">
-                      {totalQuantity}
-                    </span>
+                <div className="flex items-center gap-2">
+                  {!isLoading && user && (
+                    <button
+                      type="button"
+                      onClick={handleLogout}
+                      className="inline-flex items-center gap-2 rounded-full border border-emerald-100 bg-white px-3 py-1.5 text-xs font-semibold text-emerald-700 shadow-sm hover:border-emerald-300 hover:bg-emerald-50 dark:border-emerald-800 dark:bg-slate-900 dark:text-emerald-100 dark:hover:border-emerald-500 dark:hover:bg-emerald-950"
+                    >
+                      Logout
+                    </button>
                   )}
-                </Link>
+                  <Link
+                    href="/cart"
+                    onClick={() => setMobileOpen(false)}
+                    className="relative inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-emerald-600 to-emerald-500 px-3 py-1.5 text-xs font-semibold text-white shadow-md shadow-emerald-500/40"
+                  >
+                    <FiShoppingCart size={14} />
+                    <span>Cart</span>
+                    {totalQuantity > 0 && (
+                      <span className="inline-flex h-4 min-w-[1.1rem] items-center justify-center rounded-full bg-white px-1 text-[0.65rem] font-semibold text-emerald-700">
+                        {totalQuantity}
+                      </span>
+                    )}
+                  </Link>
+                </div>
               </div>
             </div>
           </motion.div>
