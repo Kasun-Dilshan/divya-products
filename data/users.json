@@ -1,1 +1,9 @@
-[]
+[
+  {
+    "id": "a0f4ec34-c990-461a-83ed-3cc81ff98d72",
+    "name": "Test User",
+    "email": "test@divya.lk",
+    "passwordHash": "$2b$10$GkhTf74EoYgoKeBimy8Jt.o4Mhpy.uiWN7IZb0IUEKrda1kkV4wZ2",
+    "createdAt": "2026-03-15T16:25:43.020Z"
+  }
+]
