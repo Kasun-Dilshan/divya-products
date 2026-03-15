@@ -1,0 +1,10 @@
+<svg width="400" height="300" viewBox="0 0 400 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="300" rx="30" fill="#FFEDD5" />
+  <circle cx="200" cy="150" r="80" fill="#FFEDD5" />
+  <path d="M150 140 L160 160 L140 150 Z" fill="#C2410C" />
+  <path d="M180 130 L190 145 L175 140 Z" fill="#9A3412" />
+  <path d="M210 160 L220 175 L200 170 Z" fill="#EA580C" />
+  <path d="M230 135 L245 150 L225 155 Z" fill="#C2410C" />
+  <path d="M190 180 L205 190 L185 200 Z" fill="#9A3412" />
+  <text x="200" y="260" text-anchor="middle" font-family="sans-serif" font-size="18" font-weight="bold" fill="#9A3412">Chilli Pieces</text>
+</svg>

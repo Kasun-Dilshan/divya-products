@@ -1,4 +1,4 @@
-export type ProductCategory = "powder" | "whole" | "mixed";
+export type ProductCategory = "powder" | "whole" | "pieces" | "tea" | "mixed";
 
 export type Product = {
   id: string;
@@ -13,48 +13,48 @@ export type Product = {
 
 export const products: Product[] = [
   {
-    id: "ceylon-cinnamon-powder",
-    slug: "ceylon-cinnamon-powder",
-    name: "Ceylon Cinnamon Powder",
-    price: 950,
+    id: "chilli-powder",
+    slug: "chilli-powder",
+    name: "Chilli Powder",
+    price: 500,
     category: "powder",
-    shortDescription: "Pure Ceylon cinnamon powder with a sweet, delicate aroma.",
+    shortDescription: "Pure Sri Lankan Chilli Powder with vibrant color and heat.",
     description:
-      "Our Ceylon Cinnamon Powder is sourced from small-scale farmers in Sri Lanka and finely ground to preserve its delicate sweetness and aroma. Perfect for baking, beverages, and everyday cooking, this premium spice is free from additives and preservatives.",
-    image: "/images/ceylon-cinnamon-powder.svg",
+      "Made from high-quality sun-dried chillies, our Chilli Powder brings authentic Sri Lankan heat and a bright red color to your curries and dishes. It adds a powerful punch to any meal.",
+    image: "/images/chilli-powder.svg",
   },
   {
-    id: "turmeric-powder",
-    slug: "turmeric-powder",
-    name: "Turmeric Powder",
-    price: 750,
-    category: "powder",
-    shortDescription: "Vibrant turmeric powder rich in natural curcumin.",
+    id: "chilli-pieces",
+    slug: "chilli-pieces",
+    name: "Chilli Pieces",
+    price: 550,
+    category: "pieces",
+    shortDescription: "Crushed chilli pieces for the perfect spicy kick.",
     description:
-      "Our Turmeric Powder is made from hand-selected turmeric roots, sun-dried and stone-ground to retain their natural curcumin and earthy flavor. Ideal for curries, golden milk, and wellness blends.",
-    image: "/images/turmeric-powder.svg",
+      "Perfect for seasoning, tempering or sprinkling. Our crushed chilli pieces deliver a bold, fiery flavor and a wonderful texture that enhances any meal from pizzas to curries.",
+    image: "/images/chilli-pieces.svg",
   },
   {
-    id: "black-pepper-whole",
-    slug: "black-pepper-whole",
-    name: "Black Pepper",
-    price: 1200,
-    category: "whole",
-    shortDescription: "Whole black peppercorns with bold, robust heat.",
-    description:
-      "These whole Black Peppercorns are harvested at peak ripeness and sun-dried to lock in their bold, pungent flavor. Grind fresh over your dishes for maximum aroma and depth.",
-    image: "/images/black-pepper.svg",
-  },
-  {
-    id: "curry-powder",
-    slug: "curry-powder",
-    name: "Curry Powder",
+    id: "roasted-curry",
+    slug: "roasted-curry",
+    name: "Roasted Curry Powder",
     price: 850,
-    category: "mixed",
-    shortDescription: "A balanced Sri Lankan curry blend for everyday cooking.",
+    category: "powder",
+    shortDescription: "Authentic Sri Lankan roasted curry powder for rich, dark curries.",
     description:
-      "Our Curry Powder is a carefully balanced blend of roasted Sri Lankan spices, crafted to bring authentic flavor to your home cooking. Use it as a base for vegetable, meat, or seafood curries.",
-    image: "/images/curry-powder.svg",
+      "A carefully roasted blend of coriander, cumin, fennel, and other aromatic spices. Essential for traditional Sri Lankan meat curries, providing a deep, complex flavor and dark rich color.",
+    image: "/images/roasted-curry.svg",
+  },
+  {
+    id: "tea",
+    slug: "tea",
+    name: "Ceylon Tea",
+    price: 1200,
+    category: "tea",
+    shortDescription: "Premium Ceylon loose leaf tea.",
+    description:
+      "Handpicked from the finest tea gardens in Sri Lanka. Our Ceylon Tea offers a bright, full-bodied cup with a classic aroma, perfect for any time of the day. A refreshing and classic choice.",
+    image: "/images/tea.svg",
   },
 ];
 

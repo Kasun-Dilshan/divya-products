@@ -1,0 +1,7 @@
+<svg width="400" height="300" viewBox="0 0 400 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="300" rx="30" fill="#D1FAE5" />
+  <circle cx="200" cy="150" r="80" fill="#A7F3D0" />
+  <path d="M170 180 Q200 100 230 180 Z" fill="#059669" />
+  <path d="M185 175 Q200 120 215 175 Z" fill="#047857" />
+  <text x="200" y="260" text-anchor="middle" font-family="sans-serif" font-size="18" font-weight="bold" fill="#065F46">Ceylon Tea</text>
+</svg>
