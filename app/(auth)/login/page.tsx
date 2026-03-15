@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -10,7 +10,7 @@ import { Button } from "@/components/Button";
 import { FormField } from "@/components/FormField";
 import { FiMail, FiLock, FiArrowRight } from "react-icons/fi";
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { login } = useAuth();
@@ -37,7 +37,6 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center p-4">
       <motion.div
         initial={{ opacity: 0, scale: 0.95, y: 10 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -120,6 +119,15 @@ export default function LoginPage() {
           </Link>
         </div>
       </motion.div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center p-4">
+      <Suspense fallback={<div className="h-8 w-8 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent" />}>
+        <LoginForm />
+      </Suspense>
     </div>
   );
 }
