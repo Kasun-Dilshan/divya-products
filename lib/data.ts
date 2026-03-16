@@ -2,7 +2,7 @@ import { promises as fs } from "node:fs";
 import path from "node:path";
 import { products as defaultProducts } from "@/data/products";
 
-type ProductCategory = "powder" | "whole" | "pieces" | "tea" | "mixed";
+export type ProductCategory = "powder" | "whole" | "pieces" | "tea" | "mixed";
 
 export type Product = {
   id: string;

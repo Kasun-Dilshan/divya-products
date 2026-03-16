@@ -1,11 +1,12 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getSessionFromCookies } from "@/lib/auth/auth";
 import { getProductById, readProducts, writeProducts } from "@/lib/data";
 
 export async function GET(
-  request: Request,
-  { params }: { params: { id: string } },
+  request: NextRequest,
+  context: { params: { id: string } | Promise<{ id: string }> },
 ) {
+  const params = await context.params;
   const session = await getSessionFromCookies();
   if (!session || session.role !== "admin") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -20,9 +21,10 @@ export async function GET(
 }
 
 export async function PATCH(
-  request: Request,
-  { params }: { params: { id: string } },
+  request: NextRequest,
+  context: { params: { id: string } | Promise<{ id: string }> },
 ) {
+  const params = await context.params;
   const session = await getSessionFromCookies();
   if (!session || session.role !== "admin") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -60,9 +62,10 @@ export async function PATCH(
 }
 
 export async function DELETE(
-  request: Request,
-  { params }: { params: { id: string } },
+  request: NextRequest,
+  context: { params: { id: string } | Promise<{ id: string }> },
 ) {
+  const params = await context.params;
   const session = await getSessionFromCookies();
   if (!session || session.role !== "admin") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

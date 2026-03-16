@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { getSessionFromCookies } from "@/lib/auth/auth";
-import { readProducts, writeProducts } from "@/lib/data";
+import { readProducts, writeProducts, type Product, type ProductCategory } from "@/lib/data";
+
+const allowedCategories: ProductCategory[] = ["powder", "whole", "pieces", "tea", "mixed"];
 
 export async function GET() {
   const session = await getSessionFromCookies();
@@ -26,7 +28,7 @@ export async function POST(request: Request) {
   const { name, price, category, shortDescription, description, image, slug } = body as {
     name?: string;
     price?: number;
-    category?: string;
+    category?: ProductCategory;
     shortDescription?: string;
     description?: string;
     image?: string;
@@ -37,6 +39,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Missing product fields." }, { status: 400 });
   }
 
+  if (!allowedCategories.includes(category)) {
+    return NextResponse.json({ error: "Invalid category" }, { status: 400 });
+  }
+
   const products = await readProducts();
   const id = globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`;
 
@@ -45,7 +51,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Product slug already exists." }, { status: 409 });
   }
 
-  const newProduct = {
+  const newProduct: Product = {
     id,
     slug,
     name,

@@ -1,12 +1,13 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getSessionFromCookies, readOrders, writeOrders, type StoredOrderStatus } from "@/lib/auth/auth";
 
 const allowedStatuses: StoredOrderStatus[] = ["pending", "processing", "shipped", "delivered", "cancelled"];
 
 export async function PATCH(
-  request: Request,
-  { params }: { params: { id: string } },
+  request: NextRequest,
+  context: { params: { id: string } | Promise<{ id: string }> },
 ) {
+  const params = await context.params;
   const session = await getSessionFromCookies();
   if (!session || session.role !== "admin") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
