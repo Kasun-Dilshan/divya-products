@@ -7,7 +7,11 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const orders = await readOrders();
+  const orders = (await readOrders()).map((order) => ({
+    ...order,
+    status: order.status ?? "pending",
+  }));
+
   return NextResponse.json({ orders }, { status: 200 });
 }
 

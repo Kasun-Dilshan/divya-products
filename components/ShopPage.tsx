@@ -1,9 +1,21 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { products, type ProductCategory } from "@/data/products";
 import { ProductCard } from "@/components/ProductCard";
+
+type ProductCategory = "powder" | "whole" | "pieces" | "tea" | "mixed";
+
+type Product = {
+  id: string;
+  slug: string;
+  name: string;
+  price: number;
+  category: ProductCategory;
+  shortDescription: string;
+  description: string;
+  image: string;
+};
 
 const categories: { id: "all" | ProductCategory; label: string }[] = [
   { id: "all", label: "All" },
@@ -13,16 +25,48 @@ const categories: { id: "all" | ProductCategory; label: string }[] = [
 ];
 
 export function ShopPage() {
+  const [products, setProducts] = useState<Product[]>([]);
   const [search, setSearch] = useState("");
-  const [activeCategory, setActiveCategory] = useState<
-    "all" | ProductCategory
-  >("all");
+  const [activeCategory, setActiveCategory] = useState<"all" | ProductCategory>("all");
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+
+    async function load() {
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        const res = await fetch("/api/products", { cache: "no-store" });
+        const data = await res.json();
+
+        if (!res.ok) {
+          throw new Error(data.error || "Failed to load products.");
+        }
+
+        if (active) {
+          setProducts(Array.isArray(data.products) ? data.products : []);
+        }
+      } catch (err) {
+        if (!active) return;
+        setError(err instanceof Error ? err.message : "Unknown error");
+      } finally {
+        if (active) setIsLoading(false);
+      }
+    }
+
+    void load();
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const filteredProducts = useMemo(() => {
     return products.filter((product) => {
-      const matchesCategory =
-        activeCategory === "all" || product.category === activeCategory;
-
+      const matchesCategory = activeCategory === "all" || product.category === activeCategory;
       const query = search.trim().toLowerCase();
       const matchesSearch =
         !query ||
@@ -31,7 +75,7 @@ export function ShopPage() {
 
       return matchesCategory && matchesSearch;
     });
-  }, [activeCategory, search]);
+  }, [activeCategory, products, search]);
 
   return (
     <div className="flex w-full flex-col gap-8">
@@ -40,8 +84,8 @@ export function ShopPage() {
           Shop Sri Lankan Spices
         </h1>
         <p className="max-w-xl text-sm leading-relaxed text-slate-600 dark:text-slate-300">
-          Explore our selection of pure, freshly ground and whole Sri Lankan
-          spices. Filter by category or search to quickly find what you need.
+          Explore our selection of pure, freshly ground and whole Sri Lankan spices.
+          Filter by category or search to quickly find what you need.
         </p>
       </div>
 
@@ -74,21 +118,27 @@ export function ShopPage() {
         </div>
       </div>
 
-      <motion.div
-        layout
-        className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3"
-      >
-        {filteredProducts.length === 0 ? (
-          <div className="col-span-full rounded-3xl border border-dashed border-emerald-100 bg-white/70 p-8 text-center text-sm text-slate-500 dark:border-emerald-900 dark:bg-slate-950/80 dark:text-slate-300">
-            No products match your filters. Try adjusting the category or
-            search term.
-          </div>
-        ) : (
-          filteredProducts.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))
-        )}
-      </motion.div>
+      {error && (
+        <div className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700 dark:border-rose-800 dark:bg-rose-950/40 dark:text-rose-200">
+          {error}
+        </div>
+      )}
+
+      {isLoading ? (
+        <div className="rounded-xl border border-emerald-100 bg-white p-8 text-center dark:border-emerald-800/60 dark:bg-slate-900">
+          <p className="text-sm text-slate-600 dark:text-slate-300">Loading products…</p>
+        </div>
+      ) : (
+        <motion.div layout className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {filteredProducts.length === 0 ? (
+            <div className="col-span-full rounded-3xl border border-dashed border-emerald-100 bg-white/70 p-8 text-center text-sm text-slate-500 dark:border-emerald-900 dark:bg-slate-950/80 dark:text-slate-300">
+              No products match your filters. Try adjusting the category or search term.
+            </div>
+          ) : (
+            filteredProducts.map((product) => <ProductCard key={product.id} product={product} />)
+          )}
+        </motion.div>
+      )}
     </div>
   );
 }

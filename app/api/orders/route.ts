@@ -7,6 +7,20 @@ import {
   type StoredOrderItem,
 } from "@/lib/auth/auth";
 
+export async function GET() {
+  const session = await getSessionFromCookies();
+  if (!session || session.role !== "customer") {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const orders = await readOrders();
+  const userOrders = orders
+    .filter((o) => o.userId === session.sub)
+    .map((o) => ({ ...o, status: o.status ?? "pending" }));
+
+  return NextResponse.json({ orders: userOrders }, { status: 200 });
+}
+
 export async function POST(request: Request) {
   const session = await getSessionFromCookies();
   if (!session || session.role !== "customer") {
@@ -57,6 +71,7 @@ export async function POST(request: Request) {
         quantity: Number(item.quantity),
       })),
       subtotal,
+      status: "pending",
       createdAt: new Date().toISOString(),
     };
 

@@ -8,7 +8,9 @@ export async function GET() {
   }
 
   const orders = await readOrders();
-  const mine = orders.filter((order) => order.userId === session.sub);
+  const mine = orders
+    .filter((order) => order.userId === session.sub)
+    .map((order) => ({ ...order, status: order.status ?? "pending" }));
   return NextResponse.json({ orders: mine }, { status: 200 });
 }
 

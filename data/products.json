@@ -1,0 +1,42 @@
+[
+  {
+    "id": "chilli-powder",
+    "slug": "chilli-powder",
+    "name": "Chilli Powder",
+    "price": 500,
+    "category": "powder",
+    "shortDescription": "Pure Sri Lankan Chilli Powder with vibrant color and heat.",
+    "description": "Made from high-quality sun-dried chillies, our Chilli Powder brings authentic Sri Lankan heat and a bright red color to your curries and dishes. It adds a powerful punch to any meal.",
+    "image": "/images/chilli-powder.svg"
+  },
+  {
+    "id": "chilli-pieces",
+    "slug": "chilli-pieces",
+    "name": "Chilli Pieces",
+    "price": 550,
+    "category": "pieces",
+    "shortDescription": "Crushed chilli pieces for the perfect spicy kick.",
+    "description": "Perfect for seasoning, tempering or sprinkling. Our crushed chilli pieces deliver a bold, fiery flavor and a wonderful texture that enhances any meal from pizzas to curries.",
+    "image": "/images/chilli-pieces.svg"
+  },
+  {
+    "id": "roasted-curry",
+    "slug": "roasted-curry",
+    "name": "Roasted Curry Powder",
+    "price": 850,
+    "category": "powder",
+    "shortDescription": "Authentic Sri Lankan roasted curry powder for rich, dark curries.",
+    "description": "A carefully roasted blend of coriander, cumin, fennel, and other aromatic spices. Essential for traditional Sri Lankan meat curries, providing a deep, complex flavor and dark rich color.",
+    "image": "/images/roasted-curry.svg"
+  },
+  {
+    "id": "tea",
+    "slug": "tea",
+    "name": "Ceylon Tea",
+    "price": 1200,
+    "category": "tea",
+    "shortDescription": "Premium Ceylon loose leaf tea.",
+    "description": "Handpicked from the finest tea gardens in Sri Lanka. Our Ceylon Tea offers a bright, full-bodied cup with a classic aroma, perfect for any time of the day. A refreshing and classic choice.",
+    "image": "/images/tea.svg"
+  }
+]

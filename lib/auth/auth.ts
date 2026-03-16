@@ -244,6 +244,8 @@ export type StoredOrderItem = {
   quantity: number;
 };
 
+export type StoredOrderStatus = "pending" | "processing" | "shipped" | "delivered" | "cancelled";
+
 export type StoredOrder = {
   id: string;
   userId: string;
@@ -252,6 +254,7 @@ export type StoredOrder = {
   phone: string;
   items: StoredOrderItem[];
   subtotal: number;
+  status: StoredOrderStatus;
   createdAt: string;
 };
 

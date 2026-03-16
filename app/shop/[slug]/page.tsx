@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getProductBySlug, getRelatedProducts } from "@/data/products";
+import { getProductBySlug, getRelatedProducts } from "@/lib/data";
 import { ProductDetailsPage } from "@/components/ProductDetailsPage";
 
 type Params = {
@@ -11,12 +11,10 @@ type PageProps = {
   params: Params;
 };
 
-export function generateMetadata({ params }: PageProps): Metadata {
-  const product = getProductBySlug(params.slug);
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const product = await getProductBySlug(params.slug);
   if (!product) {
-    return {
-      title: "Product not found",
-    };
+    return { title: "Product not found" };
   }
 
   return {
@@ -25,15 +23,13 @@ export function generateMetadata({ params }: PageProps): Metadata {
   };
 }
 
-export default function Page({ params }: PageProps) {
-  const product = getProductBySlug(params.slug);
-
+export default async function Page({ params }: PageProps) {
+  const product = await getProductBySlug(params.slug);
   if (!product) {
     return notFound();
   }
 
-  const related = getRelatedProducts(params.slug, 3);
-
+  const related = await getRelatedProducts(params.slug, 3);
   return <ProductDetailsPage product={product} related={related} />;
 }
 
