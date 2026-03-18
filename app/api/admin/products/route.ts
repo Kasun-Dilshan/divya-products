@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSessionFromCookies } from "@/lib/auth/auth";
-import { readProducts, writeProducts, type Product, type ProductCategory } from "@/lib/data";
+import { readProducts, createProduct, type Product, type ProductCategory } from "@/lib/data";
 
 const allowedCategories: ProductCategory[] = ["powder", "whole", "pieces", "tea", "mixed"];
 
@@ -44,15 +44,12 @@ export async function POST(request: Request) {
   }
 
   const products = await readProducts();
-  const id = globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`;
-
   const existsBySlug = products.some((product) => product.slug === slug);
   if (existsBySlug) {
     return NextResponse.json({ error: "Product slug already exists." }, { status: 409 });
   }
 
-  const newProduct: Product = {
-    id,
+  const newProduct = await createProduct({
     slug,
     name,
     price,
@@ -60,8 +57,7 @@ export async function POST(request: Request) {
     shortDescription,
     description,
     image,
-  };
+  });
 
-  await writeProducts([...products, newProduct]);
   return NextResponse.json({ product: newProduct }, { status: 201 });
 }

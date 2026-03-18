@@ -1,8 +1,7 @@
 import bcrypt from "bcryptjs";
 import { jwtVerify, SignJWT } from "jose";
 import { cookies } from "next/headers";
-import { promises as fs } from "node:fs";
-import path from "node:path";
+import { prisma } from "@/lib/prisma";
 
 export type AuthRole = "customer" | "admin";
 
@@ -40,25 +39,6 @@ const COOKIE_NAME = "divya_session";
 
 const ADMIN_EMAIL = "admin@divya.lk";
 const ADMIN_PASSWORD = "admin123";
-
-function dataPath(fileName: string) {
-  return path.join(process.cwd(), "data", fileName);
-}
-
-async function readJsonFile<T>(fileName: string, fallback: T): Promise<T> {
-  try {
-    const raw = await fs.readFile(dataPath(fileName), "utf8");
-    return JSON.parse(raw) as T;
-  } catch {
-    return fallback;
-  }
-}
-
-async function writeJsonFile<T>(fileName: string, value: T): Promise<void> {
-  const filePath = dataPath(fileName);
-  await fs.mkdir(path.dirname(filePath), { recursive: true });
-  await fs.writeFile(filePath, JSON.stringify(value, null, 2) + "\n", "utf8");
-}
 
 function normalizeEmail(email: string) {
   return email.trim().toLowerCase();
@@ -131,12 +111,37 @@ export async function logoutUser() {
 }
 
 async function readUsers(): Promise<StoredUser[]> {
-  const users = await readJsonFile<StoredUser[]>("users.json", []);
-  return Array.isArray(users) ? users : [];
+  const users = await prisma.user.findMany({ orderBy: { createdAt: "desc" } });
+  return users.map((user) => ({
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    passwordHash: user.passwordHash,
+    createdAt: user.createdAt.toISOString(),
+  }));
 }
 
 async function writeUsers(users: StoredUser[]) {
-  await writeJsonFile("users.json", users);
+  await Promise.all(
+    users.map((user) =>
+      prisma.user.upsert({
+        where: { id: user.id },
+        create: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          passwordHash: user.passwordHash,
+          role: "customer",
+          createdAt: new Date(user.createdAt),
+        },
+        update: {
+          name: user.name,
+          email: user.email,
+          passwordHash: user.passwordHash,
+        },
+      }),
+    ),
+  );
 }
 
 export async function listUsers(): Promise<PublicUser[]> {
@@ -259,11 +264,55 @@ export type StoredOrder = {
 };
 
 export async function readOrders(): Promise<StoredOrder[]> {
-  const orders = await readJsonFile<StoredOrder[]>("orders.json", []);
-  return Array.isArray(orders) ? orders : [];
+  const orders = await prisma.order.findMany({
+    orderBy: { createdAt: "desc" },
+    include: { items: true },
+  });
+
+  return orders.map((order) => ({
+    id: order.id,
+    userId: order.userId,
+    customerName: order.customerName,
+    address: order.address,
+    phone: order.phone,
+    items: order.items.map((item) => ({
+      productId: item.productId,
+      name: item.name,
+      price: item.price,
+      quantity: item.quantity,
+    })),
+    subtotal: order.subtotal,
+    status: order.status as StoredOrderStatus,
+    createdAt: order.createdAt.toISOString(),
+  }));
 }
 
 export async function writeOrders(orders: StoredOrder[]) {
-  await writeJsonFile("orders.json", orders);
+  await prisma.order.deleteMany();
+  await Promise.all(
+    orders.map((order) =>
+      prisma.order.create({
+        data: {
+          id: order.id,
+          userId: order.userId,
+          customerName: order.customerName,
+          address: order.address,
+          phone: order.phone,
+          subtotal: order.subtotal,
+          status: order.status,
+          createdAt: new Date(order.createdAt),
+          items: {
+            create: order.items.map((item) => ({
+              id: `${order.id}-${item.productId}`,
+              productId: item.productId,
+              name: item.name,
+              price: item.price,
+              quantity: item.quantity,
+            })),
+          },
+        },
+      }),
+    ),
+  );
 }
 
