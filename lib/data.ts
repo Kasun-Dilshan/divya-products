@@ -1,4 +1,5 @@
-import { prisma } from "@/lib/prisma";
+import path from "node:path";
+import { promises as fs } from "node:fs";
 import { products as defaultProducts } from "@/data/products";
 
 export type ProductCategory = "powder" | "whole" | "pieces" | "tea" | "mixed";
@@ -14,105 +15,117 @@ export type Product = {
   image: string;
 };
 
-function mapPrismaProduct(product: import("@prisma/client").Product): Product {
-  return {
-    id: product.id,
-    slug: product.slug,
-    name: product.name,
-    price: product.price,
-    category: product.category as ProductCategory,
-    shortDescription: product.shortDescription,
-    description: product.description,
-    image: product.image,
-  };
+const productsFilePath = path.join(process.cwd(), "data", "products.json");
+
+async function readJsonFile<T>(filePath: string, fallback: T): Promise<T> {
+  try {
+    const raw = await fs.readFile(filePath, "utf8");
+    const parsed = JSON.parse(raw);
+    return parsed as T;
+  } catch {
+    return fallback;
+  }
+}
+
+async function writeJsonFile<T>(filePath: string, value: T): Promise<void> {
+  await fs.mkdir(path.dirname(filePath), { recursive: true });
+  await fs.writeFile(filePath, JSON.stringify(value, null, 2) + "\n", "utf8");
 }
 
 export async function readProducts(): Promise<Product[]> {
-  let products = await prisma.product.findMany({ orderBy: { createdAt: "desc" } });
-  if (!products || products.length === 0) {
-    const created = await Promise.all(
-      defaultProducts.map((item) =>
-        prisma.product.upsert({
-          where: { slug: item.slug },
-          create: {
-            id: item.id,
-            slug: item.slug,
-            name: item.name,
-            price: item.price,
-            category: item.category,
-            shortDescription: item.shortDescription,
-            description: item.description,
-            image: item.image,
-          },
-          update: {},
-        }),
-      ),
-    );
-    products = created;
+  const fileProducts = await readJsonFile<Product[]>(productsFilePath, []);
+  if (Array.isArray(fileProducts) && fileProducts.length > 0) {
+    return fileProducts;
   }
-  return products.map(mapPrismaProduct);
+
+  await writeJsonFile(productsFilePath, defaultProducts as Product[]);
+  return defaultProducts as Product[];
 }
 
-export async function writeProducts(_products: Product[]): Promise<void> {
-  // If you need bulk write, implement with prisma.product.createMany / updateMany.
-  // Current app writes via specific routes that use create/update/delete functions.
-  throw new Error("use create/update/delete functions directly");
+export async function writeProducts(products: Product[]): Promise<void> {
+  await writeJsonFile(productsFilePath, products);
 }
 
 export async function getProductById(id: string): Promise<Product | undefined> {
-  const product = await prisma.product.findUnique({ where: { id } });
-  return product ? mapPrismaProduct(product) : undefined;
+  const products = await readProducts();
+  return products.find((product) => product.id === id || product.slug === id);
 }
 
 export async function getProductBySlug(slug: string): Promise<Product | undefined> {
-  const product = await prisma.product.findUnique({ where: { slug } });
-  return product ? mapPrismaProduct(product) : undefined;
+  const products = await readProducts();
+  return products.find((product) => product.slug === slug);
 }
 
 export async function getRelatedProducts(slug: string, limit = 3): Promise<Product[]> {
-  const products = await prisma.product.findMany({
-    where: { slug: { not: slug } },
-    take: limit,
-  });
-  return products.map(mapPrismaProduct);
+  const products = await readProducts();
+  return products.filter((product) => product.slug !== slug).slice(0, limit);
 }
 
 export async function createProduct(product: Omit<Product, "id">): Promise<Product> {
-  const created = await prisma.product.create({
-    data: {
-      slug: product.slug,
-      name: product.name,
-      price: product.price,
-      category: product.category,
-      shortDescription: product.shortDescription,
-      description: product.description,
-      image: product.image,
-    },
-  });
-  return mapPrismaProduct(created);
+  const products = await readProducts();
+  const finalSlug = product.slug.trim().toLowerCase();
+  const id = finalSlug;
+
+  if (!product.name.trim() || !finalSlug) {
+    throw new Error("Product name and slug are required.");
+  }
+
+  const exists = products.some((item) => item.id === id || item.slug === finalSlug);
+  if (exists) {
+    throw new Error("Product with this slug already exists.");
+  }
+
+  const newProduct: Product = {
+    ...product,
+    id,
+    slug: finalSlug,
+  };
+
+  const updated = [...products, newProduct];
+  await writeProducts(updated);
+  return newProduct;
 }
 
-export async function updateProduct(id: string, update: Partial<Omit<Product, "id">>): Promise<Product> {
-  const existing = await prisma.product.findUnique({ where: { id } });
-  if (!existing) throw new Error("Product not found.");
+export async function updateProduct(id: string, product: Partial<Omit<Product, "id">>): Promise<Product> {
+  const products = await readProducts();
+  const index = products.findIndex((item) => item.id === id || item.slug === id);
+  if (index < 0) {
+    throw new Error("Product not found.");
+  }
 
-  const updated = await prisma.product.update({
-    where: { id },
-    data: {
-      slug: update.slug ?? existing.slug,
-      name: update.name ?? existing.name,
-      price: update.price ?? existing.price,
-      category: update.category ?? existing.category,
-      shortDescription: update.shortDescription ?? existing.shortDescription,
-      description: update.description ?? existing.description,
-      image: update.image ?? existing.image,
-    },
-  });
+  const updated = {
+    ...products[index],
+    ...product,
+  };
 
-  return mapPrismaProduct(updated);
+  if (product.slug && product.slug.trim() !== products[index].slug) {
+    updated.slug = product.slug.trim().toLowerCase();
+    updated.id = updated.slug;
+  }
+
+  const duplicates = products.some(
+    (item, idx) =>
+      idx !== index &&
+      (item.id === updated.id || item.slug === updated.slug)
+  );
+
+  if (duplicates) {
+    throw new Error("Another product already uses that slug.");
+  }
+
+  const updatedProducts = [...products];
+  updatedProducts[index] = updated;
+
+  await writeProducts(updatedProducts);
+  return updated;
 }
 
 export async function deleteProduct(id: string): Promise<void> {
-  await prisma.product.delete({ where: { id } });
+  const products = await readProducts();
+  const filtered = products.filter((item) => item.id !== id && item.slug !== id);
+  if (filtered.length === products.length) {
+    throw new Error("Product not found.");
+  }
+  await writeProducts(filtered);
 }
 

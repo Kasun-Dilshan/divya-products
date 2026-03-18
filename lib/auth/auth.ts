@@ -1,7 +1,8 @@
 import bcrypt from "bcryptjs";
 import { jwtVerify, SignJWT } from "jose";
 import { cookies } from "next/headers";
-import { prisma } from "@/lib/prisma";
+import { promises as fs } from "node:fs";
+import path from "node:path";
 
 export type AuthRole = "customer" | "admin";
 
@@ -39,6 +40,27 @@ const COOKIE_NAME = "divya_session";
 
 const ADMIN_EMAIL = "admin@divya.lk";
 const ADMIN_PASSWORD = "admin123";
+
+const dataDir = path.join(process.cwd(), "data");
+
+function dataPath(fileName: string) {
+  return path.join(dataDir, fileName);
+}
+
+async function readJsonFile<T>(fileName: string, fallback: T): Promise<T> {
+  try {
+    const raw = await fs.readFile(dataPath(fileName), "utf8");
+    return JSON.parse(raw) as T;
+  } catch {
+    return fallback;
+  }
+}
+
+async function writeJsonFile<T>(fileName: string, value: T): Promise<void> {
+  const filePath = dataPath(fileName);
+  await fs.mkdir(path.dirname(filePath), { recursive: true });
+  await fs.writeFile(filePath, JSON.stringify(value, null, 2) + "\n", "utf8");
+}
 
 function normalizeEmail(email: string) {
   return email.trim().toLowerCase();
@@ -111,46 +133,12 @@ export async function logoutUser() {
 }
 
 async function readUsers(): Promise<StoredUser[]> {
-  try {
-    const users = await prisma.user.findMany({ orderBy: { createdAt: "desc" } });
-    return users.map((user) => ({
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      passwordHash: user.passwordHash,
-      createdAt: user.createdAt.toISOString(),
-    }));
-  } catch (error) {
-    console.warn("Prisma readUsers failed, falling back to empty list", error);
-    return [];
-  }
+  const users = await readJsonFile<StoredUser[]>("users.json", []);
+  return Array.isArray(users) ? users : [];
 }
 
 async function writeUsers(users: StoredUser[]) {
-  try {
-    await Promise.all(
-      users.map((user) =>
-        prisma.user.upsert({
-          where: { id: user.id },
-          create: {
-            id: user.id,
-            name: user.name,
-            email: user.email,
-            passwordHash: user.passwordHash,
-            role: "customer",
-            createdAt: new Date(user.createdAt),
-          },
-          update: {
-            name: user.name,
-            email: user.email,
-            passwordHash: user.passwordHash,
-          },
-        }),
-      ),
-    );
-  } catch (error) {
-    console.warn("Prisma writeUsers failed, skipping write", error);
-  }
+  await writeJsonFile("users.json", users);
 }
 
 export async function listUsers(): Promise<PublicUser[]> {
@@ -273,64 +261,11 @@ export type StoredOrder = {
 };
 
 export async function readOrders(): Promise<StoredOrder[]> {
-  try {
-    const orders = await prisma.order.findMany({
-      orderBy: { createdAt: "desc" },
-      include: { items: true },
-    });
-
-    return orders.map((order) => ({
-      id: order.id,
-      userId: order.userId,
-      customerName: order.customerName,
-      address: order.address,
-      phone: order.phone,
-      items: order.items.map((item) => ({
-        productId: item.productId,
-        name: item.name,
-        price: item.price,
-        quantity: item.quantity,
-      })),
-      subtotal: order.subtotal,
-      status: order.status as StoredOrderStatus,
-      createdAt: order.createdAt.toISOString(),
-    }));
-  } catch (error) {
-    console.warn("Prisma readOrders failed, returning empty list", error);
-    return [];
-  }
+  const orders = await readJsonFile<StoredOrder[]>("orders.json", []);
+  return Array.isArray(orders) ? orders : [];
 }
 
 export async function writeOrders(orders: StoredOrder[]) {
-  try {
-    await prisma.order.deleteMany();
-    await Promise.all(
-      orders.map((order) =>
-        prisma.order.create({
-          data: {
-            id: order.id,
-            userId: order.userId,
-            customerName: order.customerName,
-            address: order.address,
-            phone: order.phone,
-            subtotal: order.subtotal,
-            status: order.status,
-            createdAt: new Date(order.createdAt),
-            items: {
-              create: order.items.map((item) => ({
-                id: `${order.id}-${item.productId}`,
-                productId: item.productId,
-                name: item.name,
-                price: item.price,
-                quantity: item.quantity,
-              })),
-            },
-          },
-        }),
-      ),
-    );
-  } catch (error) {
-    console.warn("Prisma writeOrders failed, skipping write", error);
-  }
+  await writeJsonFile("orders.json", orders);
 }
 
