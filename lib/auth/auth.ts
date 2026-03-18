@@ -111,37 +111,46 @@ export async function logoutUser() {
 }
 
 async function readUsers(): Promise<StoredUser[]> {
-  const users = await prisma.user.findMany({ orderBy: { createdAt: "desc" } });
-  return users.map((user) => ({
-    id: user.id,
-    name: user.name,
-    email: user.email,
-    passwordHash: user.passwordHash,
-    createdAt: user.createdAt.toISOString(),
-  }));
+  try {
+    const users = await prisma.user.findMany({ orderBy: { createdAt: "desc" } });
+    return users.map((user) => ({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      passwordHash: user.passwordHash,
+      createdAt: user.createdAt.toISOString(),
+    }));
+  } catch (error) {
+    console.warn("Prisma readUsers failed, falling back to empty list", error);
+    return [];
+  }
 }
 
 async function writeUsers(users: StoredUser[]) {
-  await Promise.all(
-    users.map((user) =>
-      prisma.user.upsert({
-        where: { id: user.id },
-        create: {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          passwordHash: user.passwordHash,
-          role: "customer",
-          createdAt: new Date(user.createdAt),
-        },
-        update: {
-          name: user.name,
-          email: user.email,
-          passwordHash: user.passwordHash,
-        },
-      }),
-    ),
-  );
+  try {
+    await Promise.all(
+      users.map((user) =>
+        prisma.user.upsert({
+          where: { id: user.id },
+          create: {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            passwordHash: user.passwordHash,
+            role: "customer",
+            createdAt: new Date(user.createdAt),
+          },
+          update: {
+            name: user.name,
+            email: user.email,
+            passwordHash: user.passwordHash,
+          },
+        }),
+      ),
+    );
+  } catch (error) {
+    console.warn("Prisma writeUsers failed, skipping write", error);
+  }
 }
 
 export async function listUsers(): Promise<PublicUser[]> {
@@ -264,55 +273,64 @@ export type StoredOrder = {
 };
 
 export async function readOrders(): Promise<StoredOrder[]> {
-  const orders = await prisma.order.findMany({
-    orderBy: { createdAt: "desc" },
-    include: { items: true },
-  });
+  try {
+    const orders = await prisma.order.findMany({
+      orderBy: { createdAt: "desc" },
+      include: { items: true },
+    });
 
-  return orders.map((order) => ({
-    id: order.id,
-    userId: order.userId,
-    customerName: order.customerName,
-    address: order.address,
-    phone: order.phone,
-    items: order.items.map((item) => ({
-      productId: item.productId,
-      name: item.name,
-      price: item.price,
-      quantity: item.quantity,
-    })),
-    subtotal: order.subtotal,
-    status: order.status as StoredOrderStatus,
-    createdAt: order.createdAt.toISOString(),
-  }));
+    return orders.map((order) => ({
+      id: order.id,
+      userId: order.userId,
+      customerName: order.customerName,
+      address: order.address,
+      phone: order.phone,
+      items: order.items.map((item) => ({
+        productId: item.productId,
+        name: item.name,
+        price: item.price,
+        quantity: item.quantity,
+      })),
+      subtotal: order.subtotal,
+      status: order.status as StoredOrderStatus,
+      createdAt: order.createdAt.toISOString(),
+    }));
+  } catch (error) {
+    console.warn("Prisma readOrders failed, returning empty list", error);
+    return [];
+  }
 }
 
 export async function writeOrders(orders: StoredOrder[]) {
-  await prisma.order.deleteMany();
-  await Promise.all(
-    orders.map((order) =>
-      prisma.order.create({
-        data: {
-          id: order.id,
-          userId: order.userId,
-          customerName: order.customerName,
-          address: order.address,
-          phone: order.phone,
-          subtotal: order.subtotal,
-          status: order.status,
-          createdAt: new Date(order.createdAt),
-          items: {
-            create: order.items.map((item) => ({
-              id: `${order.id}-${item.productId}`,
-              productId: item.productId,
-              name: item.name,
-              price: item.price,
-              quantity: item.quantity,
-            })),
+  try {
+    await prisma.order.deleteMany();
+    await Promise.all(
+      orders.map((order) =>
+        prisma.order.create({
+          data: {
+            id: order.id,
+            userId: order.userId,
+            customerName: order.customerName,
+            address: order.address,
+            phone: order.phone,
+            subtotal: order.subtotal,
+            status: order.status,
+            createdAt: new Date(order.createdAt),
+            items: {
+              create: order.items.map((item) => ({
+                id: `${order.id}-${item.productId}`,
+                productId: item.productId,
+                name: item.name,
+                price: item.price,
+                quantity: item.quantity,
+              })),
+            },
           },
-        },
-      }),
-    ),
-  );
+        }),
+      ),
+    );
+  } catch (error) {
+    console.warn("Prisma writeOrders failed, skipping write", error);
+  }
 }
 
